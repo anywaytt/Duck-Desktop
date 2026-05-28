@@ -111,8 +111,10 @@ Duck Desktop/
 
 ## 🦐 关于
 
-Duck Desktop 是大小姐和虾米一起折腾出来的作品。
+Duck Desktop 是大小姐和各大 Agent 一起折腾出来的作品。
 
-> *不是替代终端，是给 AI 一个可以住下来的「家」。*
+不是替代终端和网页端，是给 Hermes Agent 一个可以住下来的「家」。
 
-欢迎星标 ⭐、提 Issue、来 PR，一起让这只鸭子更可爱 🦆
+欢迎星标 ⭐、提 Issue、来 PR，也可以邮箱告知我需要修改的 bug。一起让这只鸭子更可爱 🦆，谢谢各位。
+
+📧 **mail：** `anywaytt@163.com`
