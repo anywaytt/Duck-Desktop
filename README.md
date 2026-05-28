@@ -6,7 +6,9 @@
 
 ### *让 Hermes 住进你的桌面*
 
-> **Hermes Agent 的专属桌面伴侣** — 颜值与智商并存的 AI 工作台
+🦆 **Hermes Agent 的专属桌面伴侣** ｜ 桌面宠物 🐣 · AI 记忆系统 🧠 · 智能工具箱 🔧 · 语音交互 🎙️ · 一键启动 ⚡
+
+> 不是替代终端和网页端，是给 Hermes Agent 一个可以住下来的「家」
 
 <br>
 
@@ -56,6 +58,10 @@
 ---
 
 ## 🎬 快速上手
+
+> 💡 **不想折腾代码？** 直接点上面的大按钮下载 ZIP 就行，解压即用 👆
+>
+> 以下面向想自己打包、二次开发的用户 ⚙️
 
 ```bash
 # 克隆项目
@@ -141,7 +147,9 @@ Duck Desktop 是大小姐和各大 Agent 一起折腾出来的作品。
 
 欢迎星标 ⭐、提 Issue、来 PR，也可以邮箱告知我需要修改的 bug。一起让这只鸭子更可爱 🦆，谢谢各位。
 
-📧 **mail：** `anywaytt@163.com`
+📧 **mail：** `anywaytt@163.com`  
+💬 **讨论区：** [Discussions](https://github.com/anywaytt/Duck-Desktop/discussions) — 来聊聊吧  
+🐛 **Bug / 需求：** [Issues](https://github.com/anywaytt/Duck-Desktop/issues)
 
 ---
 
