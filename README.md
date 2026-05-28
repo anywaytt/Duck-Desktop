@@ -1,5 +1,7 @@
 <div align="center">
 
+![Duck Desktop Logo](screenshots/duck_logo.png)
+
 # 🦆 Duck Desktop
 
 ### *让 Hermes 住进你的桌面*
