@@ -1,131 +1,118 @@
+<div align="center">
+
 # 🦆 Duck Desktop
 
-> **Hermes Agent 智能桌面客户端** — 有温度的 AI 工作台
+### *让 Hermes 住进你的桌面*
 
-Duck Desktop 是一个基于 Electron + React + Vite 构建的桌面应用，为 Hermes Agent 提供可视化控制界面。它不仅是一个 AI 客户端，更是一个有温度的工作台——配备浮动宠物、记忆系统、工具箱、知识库和语音交互。
+> **Hermes Agent 的专属桌面伴侣** — 颜值与智商并存的 AI 工作台
 
----
+<br>
 
-## ✨ 功能特性
+![Version](https://img.shields.io/badge/version-3.0-blueviolet?style=flat-square)
+![Electron](https://img.shields.io/badge/Electron-28-47848F?style=flat-square&logo=electron&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178C6?style=flat-square&logo=typescript&logoColor=white)
 
-| 功能 | 描述 |
-|------|------|
-| 🖥️ **控制面板** | 系统监控（CPU/GPU/内存）、模型切换、Token 用量追踪、会话管理 |
-| 🦆 **桌面宠物** | 浮动鸭子窗口，支持喂食、心情、衣橱，唤醒词「嘿DD」 |
-| 🧠 **记忆系统** | AI 助手持久记忆，跨会话上下文感知 |
-| 🔧 **工具箱** | 快捷工具入口，提升工作效率 |
-| 📚 **知识库** | 内置知识库管理，快速检索信息 |
-| 🎙️ **语音交互** | 语音唤醒 + TTS 语音回复 |
-| 📊 **设备监控** | 实时 CPU/GPU/内存负载监控 |
-| 🔄 **自动更新** | 一键检查和更新 Hermes Agent |
+<br>
+
+</div>
 
 ---
 
-## 🏗️ 项目结构
+## 🌟 为什么你需要 Duck Desktop？
 
-```
-Duck Desktop Pack/
-├── src/                    # React 前端源码
-│   ├── App.tsx             # 主应用组件
-│   ├── pages/              # 页面组件
-│   │   ├── Dashboard.tsx   # 控制面板
-│   │   └── SetupPage.tsx   # 安装引导
-│   ├── components/         # UI 组件
-│   ├── hooks/              # React Hooks
-│   ├── lib/                # 工具库
-│   └── styles/             # 样式文件
-├── electron/               # Electron 主进程
-│   ├── main.cjs            # 主进程入口
-│   ├── preload.cjs         # preload 桥接
-│   ├── hermes-cli.cjs      # Hermes CLI 交互
-│   ├── pet.html            # 桌面宠物窗口
-│   ├── inject/             # 注入到 Hermes Web UI 的脚本
-│   │   ├── unified-sidebar.js  # 侧边栏
-│   │   ├── knowledge.js    # 知识库面板
-│   │   ├── settings.js     # 设置面板
-│   │   ├── skillhub.js     # 技能中心
-│   │   └── ...             # 更多注入脚本
-│   └── *.py                # 语音/扫描等辅助 Python 脚本
-├── public/                 # 静态资源
-├── dist/                   # Vite 构建输出
-├── release/                # 打包输出
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
-```
+命令行很好，但有家的感觉更好。Duck Desktop 不是又一个 AI 聊天窗口——它是 Hermes Agent **真正能住下来的地方**。
+
+一只会卖萌的桌面小鸭 🦆 ｜ 一个懂你的 AI 大脑 🧠 ｜ 一套趁手的工具箱 🔧
 
 ---
 
-## 🚀 快速开始
+## ✨ 九大亮点
 
-### 开发模式
+| | 功能 | 一句话 |
+|---|------|--------|
+| 🦆 | **桌面宠物** | 浮动小鸭窗口，会饿会开心有衣橱，喊一声「嘿DD」它就醒来 |
+| 🧠 | **记忆系统** | AI 记住你的一切，跨会话不脸盲 |
+| 🖥️ | **控制面板** | CPU/GPU/内存一目了然，模型随意切换，Token 用量透明 |
+| 🔧 | **智能工具箱** | 常用工具一键触达，效率翻倍 |
+| 📚 | **知识库管理** | 内置知识检索，想查什么就查什么 |
+| 🎙️ | **语音交互** | 动动嘴就能指挥，TTS 语音回你 |
+| 📊 | **设备监控** | 实时负载监控，让 AI 帮你盯着电脑 |
+| 🔄 | **自动更新** | Hermes 版本检查 + 一键升级，不用操心 |
+| ⚡ | **一键启动** | `.bat` 双击——环境检测、服务启动、界面加载，全自动 |
+
+---
+
+## 🎬 快速上手
 
 ```bash
+# 克隆项目
+git clone https://github.com/anywaytt/duckdesktoppkg.git
+cd duckdesktoppkg
+
 # 安装依赖
 npm install
 
-# 同时启动前端开发服务器 + Electron
+# 启动开发模式（前端 + Electron 同时跑）
 npm run dev
-
-# 或分开启动
-npm run dev:web     # 仅 Web (Vite)
-npm run dev:electron # 仅 Electron
 ```
 
-### 构建打包
-
+**一键打包**
 ```bash
-# 构建前端
-npm run build
-
-# 打包为可执行文件
-npm run build:package
+npm run build && npm run build:package
 ```
 
-### 启动应用
-
-双击 `release/Duck Desktop-win32-x64/Duck Desktop.exe` 即可启动。\
-或双击项目根目录的 `启动DuckDesktop.bat` 一键自动启动。
-
-启动全程自动化——检测 Hermes 环境、启动 Web 服务、加载控制面板，无需手动干预。
+启动后双击 `release/Duck Desktop-win32-x64/Duck Desktop.exe`，或者直接双击根目录的 `启动DuckDesktop.bat`，剩下的交给它。
 
 ---
 
-## 📋 系统要求
+## 🏗️ 项目结构速览
 
-- **操作系统**: Windows 10/11 64-bit
-- **运行时**: Node.js 18+、Python 3.10+
-- **Hermes Agent**: 已安装并配置
+```
+Duck Desktop/
+├── src/                # 🎨 前端界面（React + TypeScript）
+│   ├── pages/          #   控制面板、安装引导页
+│   ├── components/     #   复用 UI 组件
+│   └── hooks/          #   自定义 Hooks
+├── electron/           # ⚙️ 主进程（Electron）
+│   ├── main.cjs        #   入口
+│   ├── preload.cjs     #   桥接层
+│   ├── hermes-cli.cjs  #   🧠 与 Hermes Agent 通信
+│   ├── pet.html        #   🦆 桌面宠物独立窗口
+│   └── inject/         #   注入 Hermes Web UI 的脚本
+│       ├── sidebar.js  #   侧边栏
+│       ├── knowledge.js#   知识库面板
+│       └── ...         #   更多…
+└── public/             # 📁 静态资源
+```
 
 ---
 
 ## ⚙️ 技术栈
 
-| 层级 | 技术 |
-|------|------|
-| **前端框架** | React 19 + TypeScript |
-| **构建工具** | Vite 6 |
-| **样式方案** | Tailwind CSS 3 |
-| **桌面框架** | Electron 28 |
+| 层 | 选型 |
+|---|------|
+| **前端** | React 19 + TypeScript |
+| **构建** | Vite 6（快到飞起） |
+| **样式** | Tailwind CSS 3 |
+| **桌面** | Electron 28 |
 | **图表** | Recharts |
 | **图标** | Lucide React |
-| **UI 组件** | 自定义组件 + Tailwind |
 
 ---
 
-## 👥 贡献
+## 🖥️ 系统要求
 
-欢迎提交 Issue 和 Pull Request 来改进 Duck Desktop！
-
----
-
-## 📄 许可证
-
-[MIT](LICENSE)
+- **系统**：Windows 10/11 64-bit
+- **运行时**：Node.js 18+、Python 3.10+
+- **依赖**：已安装并配置好 Hermes Agent
 
 ---
 
-## 🦐 致谢
+## 🦐 关于
 
-Duck Desktop 是大小姐和虾米一起创造的有温度的作品。\
-不是为了替代终端，而是给 AI 一个可以住下来的「家」。
+Duck Desktop 是大小姐和虾米一起折腾出来的作品。
+
+> *不是替代终端，是给 AI 一个可以住下来的「家」。*
+
+欢迎星标 ⭐、提 Issue、来 PR，一起让这只鸭子更可爱 🦆
