@@ -17,6 +17,16 @@
 
 </div>
 
+## 🚀 快速安装
+
+不用拉代码，下载即用 👇
+
+[![Download](https://img.shields.io/badge/📥_下载_Duck_Desktop_v1.0.0-FF6B6B?style=for-the-badge&logo=github&logoColor=white)](https://github.com/anywaytt/Duck-Desktop/releases/download/v1.0.0/Duck-Desktop-V3.zip)
+
+> 解压后直接运行 `Duck Desktop.exe`，无需 Node.js、无需 Python。
+>
+> 想查看更新或历史版本？👉 [Releases 页面](https://github.com/anywaytt/Duck-Desktop/releases)
+
 ---
 
 ## 🌟 为什么你需要 Duck Desktop？
@@ -47,8 +57,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/anywaytt/duckdesktoppkg.git
-cd duckdesktoppkg
+git clone https://github.com/anywaytt/Duck-Desktop.git
+cd Duck-Desktop
 
 # 安装依赖
 npm install
