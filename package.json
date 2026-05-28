@@ -38,7 +38,7 @@
     "wait-on": "^8.0.0"
   },
   "author": "Duck Team",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "build": {
     "appId": "com.duck.desktop",
     "productName": "Duck Desktop",
