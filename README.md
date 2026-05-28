@@ -128,3 +128,13 @@ Duck Desktop 是大小姐和各大 Agent 一起折腾出来的作品。
 欢迎星标 ⭐、提 Issue、来 PR，也可以邮箱告知我需要修改的 bug。一起让这只鸭子更可爱 🦆，谢谢各位。
 
 📧 **mail：** `anywaytt@163.com`
+
+---
+
+## 📜 许可证
+
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+
+本项目采用 **GNU Affero General Public License v3.0 (AGPL-3.0)** 协议，并附加使用限制条款。
+
+简单说：**可以看、可以学、可以改着玩，但禁止闭源、禁止直接拿它卖钱、禁止通过 Web 服务提供而不公开修改。** 详情请见 [LICENSE](LICENSE) 文件。
