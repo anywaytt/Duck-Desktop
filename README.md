@@ -98,6 +98,18 @@ Duck Desktop/
 
 ---
 
+## 📸 界面预览
+
+<div align="center">
+
+| 主界面 | 对话界面 | 桌面宠物 |
+|:-------:|:---------:|:---------:|
+| ![主界面](screenshots/主界面1.jpg) | ![对话界面](screenshots/对话界面2.jpg) | ![宠物鸭](screenshots/宠物鸭3.jpg) |
+
+</div>
+
+---
+
 ## ⚙️ 技术栈
 
 | 层 | 选型 |
