@@ -1,0 +1,144 @@
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  background:transparent;overflow:hidden;
+  width:100%;height:100%;
+  font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+  user-select:none;
+}
+.container{
+  position:relative;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  border-radius:16px;
+  overflow:hidden;
+  background:rgba(20,16,8,0.92);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  -webkit-app-region:drag;
+  transition:opacity 0.3s;
+}
+.hdr{
+  display:flex;align-items:center;
+  padding:8px 12px;
+  gap:8px;
+  background:rgba(40,32,16,0.6);
+  -webkit-app-region:drag;
+}
+.hdr .icon{font-size:24px;line-height:1;-webkit-app-region:no-drag}
+.hdr .title{font-size:12px;font-weight:600;color:#f5a623;flex:1}
+.hdr .status{
+  font-size:10px;color:#888;
+  padding:2px 8px;border-radius:10px;
+  background:rgba(255,255,255,0.05);
+}
+.hdr .status.listening{color:#4CAF50;background:rgba(76,175,80,0.15);animation:pulse 1.5s ease-in-out infinite}
+.hdr .status.thinking{color:#ffa726;background:rgba(255,167,38,0.15)}
+.hdr .status.speaking{color:#42a5f5;background:rgba(66,165,245,0.15)}
+.hdr .level-bar{width:40px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;flex-shrink:0}
+.hdr .level-fill{height:100%;width:0%;background:#4CAF50;border-radius:2px;transition:width 0.1s ease}
+.hdr .mode-btn{
+  cursor:pointer;font-size:14px;color:#888;
+  padding:2px 6px;border-radius:4px;
+  -webkit-app-region:no-drag;
+  transition:all 0.2s;
+}
+.hdr .mode-btn:hover{color:#f5a623;background:rgba(245,166,35,0.1)}
+.hdr .mode-btn.active{color:#4CAF50;background:rgba(76,175,80,0.2);animation:pulse 2s ease-in-out infinite}
+.hdr .close{
+  cursor:pointer;font-size:16px;color:#555;
+  padding:2px 6px;border-radius:4px;
+  -webkit-app-region:no-drag;
+}
+.hdr .close:hover{color:#f44336;background:rgba(244,67,54,0.1)}
+.msgs{
+  flex:1;overflow-y:auto;
+  padding:10px 12px;
+  display:flex;flex-direction:column;
+  gap:8px;
+  min-height:60px;
+}
+.msgs::-webkit-scrollbar{width:4px}
+.msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.msg{
+  max-width:90%;
+  animation:fadeIn 0.3s ease-out;
+}
+.msg.user{align-self:flex-end}
+.msg.duck{align-self:flex-start}
+.msg .bubble{
+  padding:8px 12px;border-radius:14px;
+  font-size:12px;line-height:1.5;
+  word-break:break-word;
+}
+.msg.user .bubble{
+  background:linear-gradient(135deg,#f5a623,#ffb830);
+  color:#1a1408;
+  border-bottom-right-radius:4px;
+}
+.msg.duck .bubble{
+  background:rgba(255,255,255,0.08);
+  color:#ddd;
+  border-bottom-left-radius:4px;
+}
+.msg.sys{
+  align-self:center;max-width:95%;
+}
+.msg.sys .bubble{
+  background:transparent;color:#666;
+  font-size:10px;text-align:center;padding:2px 8px;
+}
+.input-bar{
+  display:flex;gap:6px;
+  padding:8px 12px;
+  border-top:1px solid rgba(255,255,255,0.06);
+  -webkit-app-region:no-drag;
+}
+.input-bar input{
+  flex:1;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;
+  padding:6px 14px;
+  color:#ccc;font-size:12px;
+  outline:none;
+  font-family:inherit;
+}
+.input-bar input:focus{border-color:#f5a623}
+.input-bar input::placeholder{color:#555}
+.input-bar button{
+  background:#f5a623;color:#1a1408;
+  border:none;border-radius:50%;
+  width:32px;height:32px;
+  font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.input-bar button:hover{background:#ffb830}
+.input-bar button.mic{background:rgba(255,255,255,0.1);color:#888}
+.input-bar button.mic:hover{color:#f5a623}
+.input-bar button.mic.active{background:#f44336;color:white}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:0.5}
+}
+.duck-idle{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  flex:1;gap:4px;padding:16px;
+}
+.duck-idle .duck-emoji{
+  font-size:40px;
+  animation:duckBounce 2s ease-in-out infinite;
+}
+.duck-idle .hint{
+  font-size:10px;color:#555;
+  text-align:center;
+}
+@keyframes duckBounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}

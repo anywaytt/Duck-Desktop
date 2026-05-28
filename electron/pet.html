@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Duck Pet</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:transparent;overflow:hidden;width:100%;height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;pointer-events:none}
+.pet{position:absolute;bottom:10px;right:10px;cursor:pointer;pointer-events:auto;user-select:none}
+.duck{position:relative;width:80px;height:80px;animation:waddle 2s ease-in-out infinite}
+.duck:hover{animation:happy 0.5s ease-in-out}
+.duck.feeding{animation:bounce 0.4s ease-in-out 3}
+.body{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:52px;height:38px;background:#FFD93D;border-radius:50% 50% 45% 45%}
+.body::after{content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:56px;height:20px;background:#FFD93D;border-radius:0 0 50% 50%}
+.head{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);width:36px;height:30px;background:#FFD93D;border-radius:50%;z-index:2}
+.eye-l,.eye-r{position:absolute;top:8px;width:7px;height:7px;background:#1a1408;border-radius:50%;animation:blink 3s ease-in-out infinite}
+.eye-l{left:6px}.eye-r{right:6px}
+.beak{position:absolute;bottom:15px;left:10px;z-index:1}
+.beak::before{content:"";position:absolute;left:0;top:0;width:16px;height:8px;background:#FF8C00;border-radius:0 0 50% 50%}
+.wing{position:absolute;bottom:16px;left:6px;width:18px;height:14px;background:#F0C419;border-radius:50% 0 50% 50%;animation:flap 1.5s ease-in-out infinite}
+.wing-r{left:auto;right:6px;animation-delay:0.75s}
+.feet{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:40px;height:8px}
+.feet::before{content:"";position:absolute;left:2px;width:14px;height:6px;background:#FF8C00;border-radius:0 0 50% 50%}
+.feet::after{content:"";position:absolute;right:2px;width:14px;height:6px;background:#FF8C00;border-radius:0 0 50% 50%}
+.acc-hat{position:absolute;top:-12px;left:50%;transform:translateX(-50%);z-index:10;font-size:20px;pointer-events:none}
+.acc-glasses{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:10;font-size:14px;pointer-events:none}
+.acc-clothes{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);z-index:10;font-size:16px;pointer-events:none}
+.acc-hand{position:absolute;bottom:20px;right:-8px;z-index:10;font-size:14px;pointer-events:none}
+.bubble{position:absolute;bottom:85px;right:0;background:rgba(42,32,16,0.95);color:#f5a623;font-size:11px;padding:5px 12px;border-radius:12px;white-space:nowrap;opacity:0;transition:opacity 0.3s;pointer-events:none;border:1px solid #444;backdrop-filter:blur(8px)}
+.bubble.show{opacity:1}
+.bubble::after{content:"";position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(42,32,16,0.95)}
+.stat-float{position:absolute;bottom:90px;right:0;display:flex;gap:4px;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.stat-float.show{opacity:1}
+.stat-mini{background:rgba(42,32,16,0.9);border-radius:8px;padding:2px 6px;font-size:9px;color:#888;display:flex;align-items:center;gap:3px;border:1px solid #333}
+.stat-mini .val{color:#f5a623;font-weight:600}
+.coin-float{position:absolute;font-size:12px;color:#f5a623;font-weight:700;pointer-events:none;animation:coinUp 1s ease-out forwards;z-index:20}
+.ctx{position:absolute;background:rgba(42,32,16,0.97);border:1px solid #444;border-radius:10px;padding:4px 0;z-index:9999;min-width:130px;display:none;box-shadow:0 6px 24px rgba(0,0,0,.6);backdrop-filter:blur(12px);pointer-events:auto}
+.ctx .item{padding:7px 14px;font-size:12px;color:#ccc;cursor:pointer;display:flex;align-items:center;gap:8px;border-radius:6px;margin:2px 4px}
+.ctx .item:hover{background:#f5a623;color:#1a1408}
+.ctx .sep{height:1px;background:#333;margin:4px 8px}
+.ctx .item.danger:hover{background:#f44336;color:white}
+.panel{position:absolute;bottom:100px;right:10px;width:280px;max-height:380px;background:rgba(26,20,8,0.97);border:1px solid #444;border-radius:14px;display:none;z-index:9998;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.5);backdrop-filter:blur(12px);pointer-events:auto}
+.panel.show{display:block}
+.panel-hdr{padding:10px 14px;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between}
+.panel-hdr .title{color:#f5a623;font-size:13px;font-weight:600}
+.panel-hdr .close{color:#666;cursor:pointer;font-size:16px;padding:2px 6px}
+.panel-hdr .close:hover{color:#f44336}
+.panel-body{padding:8px;overflow-y:auto;max-height:300px}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:#444;border-radius:2px}
+.item-card{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background 0.2s;border:1px solid transparent}
+.item-card:hover{background:rgba(245,166,35,0.1);border-color:#333}
+.item-card .icon{font-size:24px;width:36px;text-align:center;flex-shrink:0}
+.item-card .info{flex:1;min-width:0}
+.item-card .name{color:#ccc;font-size:12px;font-weight:500}
+.item-card .desc{color:#666;font-size:10px;margin-top:1px}
+.item-card .action{flex-shrink:0}
+.item-card .btn{background:#f5a623;color:#1a1408;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer}
+.item-card .btn:hover{background:#ffb830}
+.item-card .btn.owned{background:#333;color:#888;cursor:default}
+.item-card .btn.equipped{background:#4CAF50;color:white}
+.item-card .count{color:#f5a623;font-size:11px;font-weight:600}
+.streak-bar{padding:8px 14px;border-bottom:1px solid #333;display:flex;align-items:center;gap:8px}
+.streak-bar .label{color:#888;font-size:10px;white-space:nowrap}
+.streak-bar .dots{display:flex;gap:3px;flex:1}
+.streak-bar .dot{width:16px;height:16px;border-radius:50%;border:1.5px solid #444;display:flex;align-items:center;justify-content:center;font-size:8px;color:#555}
+.streak-bar .dot.done{border-color:#f5a623;background:rgba(245,166,35,0.2);color:#f5a623}
+@keyframes waddle{0%,100%{transform:translateX(-50%) rotate(0deg)}25%{transform:translateX(-50%) rotate(-3deg) translateY(-2px)}75%{transform:translateX(-50%) rotate(3deg) translateY(-2px)}}
+@keyframes happy{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.15)}}
+@keyframes blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(0.1)}}
+@keyframes flap{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-15deg)}}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-12px)}}
+@keyframes coinUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-30px)}}
+</style>
+</head>
+<body>
+<div class="pet" id="pet">
+  <div class="bubble" id="bubble"></div>
+  <div class="stat-float" id="statFloat">
+    <div class="stat-mini">🪙<span class="val" id="sfCoins">0</span></div>
+    <div class="stat-mini">❤️<span class="val" id="sfMood">100</span></div>
+    <div class="stat-mini">🔥<span class="val" id="sfStreak">0</span></div>
+  </div>
+  <div class="duck" id="duck">
+    <div class="acc-hat" id="accHat"></div>
+    <div class="head">
+      <div class="acc-glasses" id="accGlasses"></div>
+      <div class="eye-l"></div><div class="eye-r"></div><div id="petFace" style="position:absolute;top:-12px;right:-8px;font-size:14px;z-index:5"></div>
+      <div class="beak"></div>
+    </div>
+    <div class="acc-clothes" id="accClothes"></div>
+    <div class="body"></div>
+    <div class="wing"></div>
+    <div class="wing wing-r"></div>
+    <div class="acc-hand" id="accHand"></div>
+    <div class="feet"></div>
+  </div>
+</div>
+<div class="ctx" id="ctx">
+  <div class="item" data-act="feed">🍞 喂食</div>
+  <div class="item" data-act="shop">🏪 商店</div>
+  <div class="item" data-act="wardrobe">👔 衣柜</div>
+  <div class="item" data-act="info">📊 状态</div>
+  <div class="sep"></div>
+  <div class="item" data-act="chat">💬 打开聊天</div>
+  <div class="item" data-act="main">📋 显示主窗口</div>
+  <div class="sep"></div>
+  <div class="item danger" data-act="quit">🚪 退出</div>
+</div>
+<div class="panel" id="panel">
+  <div class="panel-hdr">
+    <span class="title" id="panelTitle"></span>
+    <span class="close" id="panelClose">&times;</span>
+  </div>
+  <div class="streak-bar" id="streakBar"></div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+<script>
+(function(){
+var S=null,timer=null,statTimer=null;
+var FOODS=[
+  {id:'bread',icon:'🍞',name:'面包',desc:'基础口粮',cost:5,hunger:20,mood:5},
+  {id:'apple',icon:'🍎',name:'苹果',desc:'清脆可口',cost:5,hunger:15,mood:10},
+  {id:'fish',icon:'🐟',name:'小鱼干',desc:'鸭子最爱',cost:5,hunger:25,mood:15},
+  {id:'cake',icon:'🍰',name:'蛋糕',desc:'甜蜜奖励',cost:5,hunger:10,mood:25},
+  {id:'noodle',icon:'🍜',name:'面条',desc:'热乎乎的',cost:5,hunger:30,mood:8}
+];
+var ACCESSORIES=[
+  {id:'hat_cap',slot:'hat',icon:'🧢',name:'鸭舌帽',unlock:10},
+  {id:'hat_crown',slot:'hat',icon:'👑',name:'小皇冠',unlock:20},
+  {id:'hat_flower',slot:'hat',icon:'🌸',name:'花环',unlock:30},
+  {id:'hat_wizard',slot:'hat',icon:'🎩',name:'魔术帽',unlock:50},
+  {id:'glass_cool',slot:'glasses',icon:'😎',name:'墨镜',unlock:10},
+  {id:'glass_heart',slot:'glasses',icon:'💝',name:'爱心眼镜',unlock:20},
+  {id:'glass_nerd',slot:'glasses',icon:'🤓',name:'书呆子眼镜',unlock:30},
+  {id:'cloth_scarf',slot:'clothes',icon:'🧣',name:'围巾',unlock:10},
+  {id:'cloth_suit',slot:'clothes',icon:'🤵',name:'西装',unlock:30},
+  {id:'cloth_cape',slot:'clothes',icon:'🦸',name:'披风',unlock:50},
+  {id:'hand_wand',slot:'hand',icon:'🪄',name:'魔法棒',unlock:20},
+  {id:'hand_flag',slot:'hand',icon:'🚩',name:'小旗子',unlock:10}
+];
+var panel=document.getElementById('panel'),panelTitle=document.getElementById('panelTitle'),panelBody=document.getElementById('panelBody'),panelClose=document.getElementById('panelClose'),streakBar=document.getElementById('streakBar'),bubble=document.getElementById('bubble'),duckEl=document.getElementById('duck'),statFloat=document.getElementById('statFloat');
+
+async function loadState(){
+  if(window.electronAPI&&window.electronAPI.petGetState)S=await window.electronAPI.petGetState();
+  if(!S)S={coins:0,totalTokens:0,streakDays:0,lastOpenDate:'',foods:{},equipped:{hat:null,glasses:null,clothes:null,hand:null},accessories:[],mood:100,hunger:100};
+  updateUI();
+}
+function updateUI(){
+  if(!S)return;
+  document.getElementById('sfCoins').textContent=S.coins||0;
+  // 鸭子心情表情
+  var moodVal=S.mood!=null?S.mood:100;
+  var hungerVal=S.hunger!=null?S.hunger:100;
+  var face=document.getElementById('petFace');
+  if(face){
+    if(hungerVal<20)face.textContent='\ud83d\ude22'; // 饿哭了
+    else if(moodVal<20)face.textContent='\ud83d\ude14'; // 不开心
+    else if(moodVal>80)face.textContent='\ud83d\ude0a'; // 很开心
+    else face.textContent='\ud83d\ude42'; // 普通
+  }
+  document.getElementById('sfMood').textContent=S.mood!=null?S.mood:100;
+  document.getElementById('sfStreak').textContent=S.streakDays||0;
+  renderEq();
+}
+function renderEq(){
+  var eq=S.equipped||{};
+  document.getElementById('accHat').textContent=getAccIcon(eq.hat);
+  document.getElementById('accGlasses').textContent=getAccIcon(eq.glasses);
+  document.getElementById('accClothes').textContent=getAccIcon(eq.clothes);
+  document.getElementById('accHand').textContent=getAccIcon(eq.hand);
+}
+function getAccIcon(id){if(!id)return'';var a=ACCESSORIES.find(function(x){return x.id===id});return a?a.icon:''}
+async function saveState(){if(window.electronAPI&&window.electronAPI.petSaveState)await window.electronAPI.petSaveState(S)}
+function showBubble(t,d){bubble.textContent=t;bubble.classList.add('show');clearTimeout(timer);timer=setTimeout(function(){bubble.classList.remove('show')},d||2500)}
+function floatCoin(t){var el=document.createElement('div');el.className='coin-float';el.textContent=t;el.style.left=(30+Math.random()*20)+'px';el.style.bottom='70px';document.getElementById('pet').appendChild(el);setTimeout(function(){el.remove()},1000)}
+
+function openPanel(title,bodyHtml,showStreak){
+  panelTitle.textContent=title;panelBody.innerHTML=bodyHtml;
+  streakBar.style.display=showStreak?'flex':'none';
+  if(showStreak)renderStreakBar();
+  panel.classList.add('show');
+}
+function renderStreakBar(){
+  var d=S.streakDays||0,h='<span class="label">\ud83d\udd25</span><div class="dots">';
+  for(var i=1;i<=10;i++)h+='<div class="dot '+(i<=d?'done':'')+'">'+i+'</div>';
+  streakBar.innerHTML=h+'</div>';
+}
+
+function openShop(){
+  var h='';
+  FOODS.forEach(function(f){
+    var c=(S.foods&&S.foods[f.id])||0;
+    h+='<div class="item-card"><div class="icon">'+f.icon+'</div><div class="info"><div class="name">'+f.name+'</div><div class="desc">'+f.desc+' \u00b7 \u9971+'+f.hunger+' \u5fc3\u60c5+'+f.mood+'</div></div><div class="action">'+(c>0?'<span class="count">x'+c+'</span> ':'')+'<button class="btn" onclick="window._buyFood(\''+f.id+'\')">'+f.cost+'\ud83e\ude99</button></div></div>';
+  });
+  openPanel('\ud83c\udfea \u5546\u5e97',h,false);
+}
+window._buyFood=async function(fid){
+  var f=FOODS.find(function(x){return x.id===fid});if(!f)return;
+  if((S.coins||0)<f.cost){showBubble('\u91d1\u5e01\u4e0d\u591f\u5566\uff5e');return}
+  S.coins-=f.cost;if(!S.foods)S.foods={};S.foods[fid]=(S.foods[fid]||0)+1;
+  await saveState();showBubble('\u4e70\u5230'+f.icon+'\u5566\uff01');floatCoin('-'+f.cost+'\ud83e\ude99');updateUI();openShop();
+};
+
+function openFeed(){
+  var h='',any=false;
+  FOODS.forEach(function(f){
+    var c=(S.foods&&S.foods[f.id])||0;if(c<=0)return;any=true;
+    h+='<div class="item-card"><div class="icon">'+f.icon+'</div><div class="info"><div class="name">'+f.name+'</div><div class="desc">\u9971+'+f.hunger+' \u5fc3\u60c5+'+f.mood+'</div></div><div class="action"><span class="count">x'+c+'</span> <button class="btn" onclick="window._feedDuck(\''+f.id+'\')">\u5582</button></div></div>';
+  });
+  if(!any)h='<div style="text-align:center;color:#666;padding:20px;font-size:12px">\u8fd8\u6ca1\u6709\u98df\u7269\u54e6\uff5e<br>\u53bb\u5546\u5e97\u4e70\u70b9\u5427\uff01</div>';
+  openPanel('\ud83c\udf5e \u5582\u98df',h,false);
+}
+window._feedDuck=async function(fid){
+  var f=FOODS.find(function(x){return x.id===fid});if(!f)return;
+  var c=(S.foods&&S.foods[f.id])||0;if(c<=0)return;
+  S.foods[fid]=c-1;S.mood=Math.min(100,(S.mood||0)+f.mood);S.hunger=Math.min(100,(S.hunger||0)+f.hunger);
+  await saveState();duckEl.classList.add('feeding');setTimeout(function(){duckEl.classList.remove('feeding')},1200);
+  showBubble(f.icon+' '+f.name+'\uff5e\u597d\u597d\u5403\uff01');floatCoin('+'+f.mood+'\u2764\ufe0f');updateUI();setTimeout(openFeed,500);
+};
+
+function openWardrobe(){
+  var slots=['hat','glasses','clothes','hand'],sn={hat:'\u5e3d\u5b50',glasses:'\u773c\u955c',clothes:'\u8863\u670d',hand:'\u624b\u6301'};
+  var h='';var eq=S.equipped||{};
+  slots.forEach(function(slot){
+    var items=ACCESSORIES.filter(function(a){return a.slot===slot});
+    var owned=(S.accessories||[]).filter(function(id){return items.some(function(a){return a.id===id})});
+    var equipped=eq[slot];
+    h+='<div style="color:#888;font-size:10px;padding:6px 10px 2px">'+sn[slot]+'</div>';
+    items.forEach(function(a){
+      var isOwned=owned.indexOf(a.id)>=0,isEq=equipped===a.id,canUn=(S.streakDays||0)>=a.unlock;
+      var btn='',dis='';
+      if(isEq){btn='\u5df2\u7a7f\u6234';dis='disabled style="background:#4CAF50;color:white"'}
+      else if(isOwned){btn='\u7a7f\u6234'}
+      else if(canUn){btn='\u9886\u53d6'}
+      else{btn='\u7b2c'+a.unlock+'\u5929';dis='disabled style="background:#333;color:#555"'}
+      h+='<div class="item-card" style="'+((isOwned||canUn)?'':'opacity:0.5')+'"><div class="icon">'+a.icon+'</div><div class="info"><div class="name">'+a.name+'</div><div class="desc">'+(isOwned?'\u5df2\u62e5\u6709':canUn?'\u53ef\u9886\u53d6\uff01':'\u8fde\u7eed\u6253\u5f00'+a.unlock+'\u5929\u89e3\u9501')+'</div></div><div class="action"><button class="btn" onclick="window._handleAcc(\''+a.id+'\')" '+dis+'>'+btn+'</button></div></div>';
+    });
+  });
+  openPanel('\ud83d\udc54 \u8863\u67dc',h,true);
+}
+window._handleAcc=async function(aid){
+  var a=ACCESSORIES.find(function(x){return x.id===aid});if(!a)return;
+  if(!S.accessories)S.accessories=[];
+  var isOwned=S.accessories.indexOf(aid)>=0;
+  if(!isOwned&&(S.streakDays||0)>=a.unlock){S.accessories.push(aid);isOwned=true;showBubble('\u89e3\u9501\u4e86 '+a.icon+' '+a.name+'\uff01');await saveState()}
+  if(!isOwned)return;
+  if(!S.equipped)S.equipped={};
+  S.equipped[a.slot]=S.equipped[a.slot]===aid?null:aid;
+  await saveState();updateUI();openWardrobe();
+};
+
+function openInfo(){
+  var eq=S.equipped||{},ac=(S.accessories||[]).length,fc=0;
+  if(S.foods){for(var k in S.foods)fc+=S.foods[k]}
+  var h='<div style="padding:4px;font-size:12px;line-height:2;color:#ccc">'
+    +'<div>\ud83e\ude99 \u91d1\u5e01\uff1a<span style="color:#f5a623;font-weight:600">'+(S.coins||0)+'</span></div>'
+    +'<div>\ud83d\udcac \u7d2f\u8ba1Token\uff1a<span style="color:#f5a623">'+((S.totalTokens||0).toLocaleString())+'</span></div>'
+    +'<div>\ud83d\udd25 \u8fde\u7eed\u6253\u5f00\uff1a<span style="color:#f5a623">'+(S.streakDays||0)+'\u5929</span></div>'
+    +'<div>\u2764\ufe0f \u5fc3\u60c5\uff1a<span style="color:#f5a623">'+(S.mood!=null?S.mood:100)+'</span><div style="width:100%;height:4px;background:#333;border-radius:2px;margin-top:2px"><div id="moodBar" style="height:100%;border-radius:2px;transition:width 0.3s;width:'+Math.max(0,S.mood||100)+'%"></div></div></div>'
+    +'<div>\ud83c\udf5e \u98df\u7269\uff1a<span style="color:#f5a623">'+fc+'</span></div>'
+    +'<div>\ud83d\udc54 \u914d\u9970\uff1a<span style="color:#f5a623">'+ac+'/'+ACCESSORIES.length+'</span></div></div>';
+  openPanel('\ud83d\udcca \u72b6\u6001',h,false);
+}
+
+var _panelOpen=false;
+panelClose.onclick=function(){panel.classList.remove('show');_panelOpen=false;if(window.electronAPI)window.electronAPI.petMouseLeave()};
+document.addEventListener('click',function(e){if(!panel.contains(e.target)&&!document.getElementById('pet').contains(e.target)){panel.classList.remove('show');_panelOpen=false}});
+
+var ctx=document.getElementById('ctx');
+document.getElementById('pet').addEventListener('contextmenu',function(e){e.preventDefault();_panelOpen=true;ctx.style.display='block';ctx.style.left=Math.min(e.clientX,window.innerWidth-140)+'px';ctx.style.top=Math.min(e.clientY,window.innerHeight-250)+'px'});
+document.addEventListener('click',function(e){if(!ctx.contains(e.target)){ctx.style.display='none';if(!panel.classList.contains('show')){_panelOpen=false}}});
+ctx.querySelectorAll('.item').forEach(function(el){el.onclick=function(e){if(e)e.stopPropagation();ctx.style.display='none';var act=this.getAttribute('data-act');
+  if(act==='feed')openFeed();else if(act==='shop')openShop();else if(act==='wardrobe')openWardrobe();else if(act==='info')openInfo();
+  else if(act==='chat'){_panelOpen=false;if(window.electronAPI)window.electronAPI.openChat()}
+  else if(act==='main'){_panelOpen=false;if(window.electronAPI)window.electronAPI.showMain()}
+  else if(act==='quit'){_panelOpen=false;if(window.electronAPI)window.electronAPI.quitApp()}
+  else{_panelOpen=false;if(window.electronAPI)window.electronAPI.petMouseLeave()}
+  }});
+
+function getMsgs(){var m=['\u5636\u5636\uff01','\u563f\u563f\uff5e','\u5728\u5462\uff01','\u6478\u6478\u6211\uff5e','\u4eca\u5929\u5929\u6c14\u4e0d\u9519\u54e6\uff01','\u6211\u662f\u5c0f\u9e2d\u5b50\uff5e','\u5636\u5636\u5636\uff5e','\u60f3\u5403\u9762\u5305\u4e86\uff5e','\u5634\u5df4\u597d\u997f\u554a\uff5e','\u966f\u4f1a\u5403\u996d\u5417\uff1f','\u6765\u6478\u6478\u6211\u561b\uff5e','\u4f60\u597d\u5fd9\u5440','\u6211\u5728\u53d1\u5446\uff5e','\u597d\u65e0\u804a\u554a\uff5e','\u966f\u4f1a\u966f\u4f1a\u6211\u5417\uff1f'];if(S.mood!=null&&S.mood<30)m=['\u597d\u997f...','\u5fc3\u60c5\u4e0d\u597d...','\u5582\u5582\u6211\u561b','\u545b\u545b...'];else if(S.mood!=null&&S.mood>80)m=['\u597d\u5f00\u5fc3\uff01','\u5636\u5636\u5636\uff01','\u4eca\u5929\u771f\u68d2\uff01','\u2764\ufe0f'];if(S.streakDays>0)m.push('\u8fde\u7eed'+S.streakDays+'\u5929\u5566\uff01');return m}
+
+var clickT=null;
+document.getElementById('pet').addEventListener('click',function(e){if(e.button!==0)return;if(clickT){clearTimeout(clickT);clickT=null;if(window.electronAPI)window.electronAPI.openChat();return}clickT=setTimeout(function(){clickT=null;statFloat.classList.toggle('show');var m=getMsgs();showBubble(m[Math.floor(Math.random()*m.length)])},250)});
+
+// 随机事件系统
+var _events=[
+  {p:0.03,msg:'\u6211\u6361\u5230\u91d1\u5e01\u5566\uff01 +2\ud83e\ude99',fn:function(){S.coins=(S.coins||0)+2;updateUI();floatCoin('+2\ud83e\ude99');}},
+  {p:0.02,msg:'\u53d1\u73b0\u4e86\u4e00\u9897\u5b9d\u77f3\uff01 +5\ud83d\udc8e',fn:function(){S.coins=(S.coins||0)+5;updateUI();floatCoin('+5\ud83d\udc8e');}},
+  {p:0.05,msg:'\u6211\u5403\u4e86\u70b9\u4e1c\u897f\uff5e hunger+5',fn:function(){S.hunger=Math.min(100,(S.hunger||0)+5);updateUI();}},
+  {p:0.04,msg:'\u5929\u6c14\u597d\u5fc3\u60c5\u597d\uff01 mood+3',fn:function(){S.mood=Math.min(100,(S.mood||0)+3);updateUI();}},
+  {p:0.02,msg:'\u6211\u68a6\u5230\u4e86\u597d\u591a\u597d\u5403\u7684\uff5e',fn:function(){}},
+  {p:0.03,msg:'\u6709\u8682\u8681\uff01\u6709\u8682\u8681\uff01 \u5636\u5636\u5636',fn:function(){}},
+  {p:0.02,msg:'\u6211\u60f3\u51fa\u53bb\u73a9\uff5e',fn:function(){}},
+  {p:0.04,msg:'\u4f60\u8f93\u5165\u7684\u5b57\u771f\u591a\uff0c\u597d\u5389\u5bb3\uff01',fn:function(){}}
+];
+setInterval(function(){
+  if(panel.classList.contains('show'))return;
+  // 随机事件
+  for(var i=0;i<_events.length;i++){
+    if(Math.random()<_events[i].p){showBubble(_events[i].msg);_events[i].fn();saveState();return;}
+  }
+  // 普通消息
+  var m=getMsgs();showBubble(m[Math.floor(Math.random()*m.length)],2000)},40000+Math.random()*20000);
+
+window._petShowBubble=showBubble;window._petFloatCoin=floatCoin;window._petLoadState=loadState;
+// ── 鼠标穿透控制 ──
+  var petArea=document.getElementById("pet");
+  // 鼠标进入宠物区域 → 捕获事件
+  petArea.addEventListener("mouseenter",function(){
+    if(window.electronAPI)window.electronAPI.petMouseEnter();
+  });
+  // 鼠标离开宠物区域 → 如果没有面板打开则穿透
+  petArea.addEventListener("mouseleave",function(){
+    if(!_panelOpen){
+      if(window.electronAPI)window.electronAPI.petMouseLeave();
+    }
+  });
+  // 鼠标进入面板/菜单 → 捕获事件
+  panel.addEventListener("mouseenter",function(){if(window.electronAPI)window.electronAPI.petMouseEnter()});
+  ctx.addEventListener("mouseenter",function(){if(window.electronAPI)window.electronAPI.petMouseEnter()});
+  // 鼠标离开面板/菜单 → 穿透（面板关闭时由其他逻辑处理）
+  panel.addEventListener("mouseleave",function(){
+    if(!panel.classList.contains('show')&&!_panelOpen){
+      if(window.electronAPI)window.electronAPI.petMouseLeave();
+    }
+  });
+  ctx.addEventListener("mouseleave",function(){
+    if(ctx.style.display!=='block'&&!_panelOpen){
+      if(window.electronAPI)window.electronAPI.petMouseLeave();
+    }
+  });
+  // 包装 openPanel 来跟踪面板状态
+  var _origOpenPanel=openPanel;
+  openPanel=function(title,bodyHtml,showStreak){
+    _panelOpen=true;
+    _origOpenPanel(title,bodyHtml,showStreak);
+  };
+
+  loadState();setTimeout(function(){showBubble('\u5636\u5636\uff01\u6211\u5728\u8fd9\u91cc\uff5e',3000)},1000);
+  // 定期刷新状态（每 10 秒从主进程同步最新数据）
+  setInterval(async function(){
+    if(window.electronAPI&&window.electronAPI.petGetState){
+      var ns=await window.electronAPI.petGetState();
+      if(ns){S=ns;updateUI()}
+    }
+  },10000);
+})();
+</script>
+</body>
+</html>

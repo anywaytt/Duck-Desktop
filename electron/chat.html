@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Duck Chat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1408;color:#ccc;font-family:Inter,-apple-system,sans-serif;display:flex;flex-direction:column;height:100vh}
+.hdr{padding:10px 16px;background:#2a2010;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between;-webkit-app-region:drag}
+.hdr span{-webkit-app-region:no-drag}
+.hdr .title{color:#f5a623;font-weight:600;font-size:14px}
+.hdr .sts{font-size:11px}
+.hdr .close{cursor:pointer;font-size:18px;color:#666;padding:4px 8px;-webkit-app-region:no-drag}
+.hdr .close:hover{color:#f44336}
+.msgs{flex:1;overflow-y:auto;padding:16px}
+.msg{margin-bottom:12px;max-width:85%;word-break:break-word}
+.msg.u{margin-left:auto}
+.msg .bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.msg.u .bubble{background:#f5a623;color:#1a1408;border-bottom-right-radius:4px}
+.msg.k .bubble{background:#2a2010;color:#ccc;border-bottom-left-radius:4px}
+.msg.s .bubble{background:none;color:#666;font-size:11px;text-align:center}
+.msg .time{font-size:10px;color:#666;margin-top:4px}
+.msg .meta{font-size:10px;color:#555;margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.msg.u .meta{justify-content:flex-end}
+.msg .meta span{opacity:0.8}
+.msg.u .time{text-align:right}
+.msg .bubble img{max-width:200px;max-height:150px;border-radius:8px;margin-top:6px;cursor:pointer;display:block}
+.input-area{padding:12px;border-top:1px solid #333;background:#2a2010}
+.attach-preview{display:none;padding:8px;background:#1a1408;border-radius:8px;margin-bottom:8px;position:relative}
+.attach-preview img{max-width:120px;max-height:80px;border-radius:6px}
+.attach-preview .name{font-size:11px;color:#888;margin-left:8px;display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.attach-preview .remove{position:absolute;top:4px;right:8px;cursor:pointer;color:#f44336;font-size:16px}
+.input-row{display:flex;gap:6px;align-items:flex-end}
+.tts-playing{animation:ttsPulse 0.8s ease-in-out infinite}
+@keyframes ttsPulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.tools{display:flex;gap:2px;flex-shrink:0}
+.tools button{background:none;border:none;color:#888;cursor:pointer;font-size:18px;padding:6px;border-radius:4px}
+.tools button:hover{color:#f5a623;background:#333}
+textarea{flex:1;background:#1a1408;border:1px solid #444;border-radius:8px;padding:10px 12px;color:#ccc;font-size:13px;font-family:inherit;resize:none;outline:none;max-height:120px;min-height:40px}
+textarea:focus{border-color:#f5a623}
+.send-btn{background:#f5a623;color:#1a1408;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.send-btn:hover{background:#ffb830}
+.typing{padding:8px 16px;font-size:12px;color:#888;display:none}
+.img-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;justify-content:center;align-items:center;cursor:zoom-out}
+.img-overlay.show{display:flex}
+.img-overlay img{max-width:95vw;max-height:95vh;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:20px">🦆</span>
+    <span class="title">Duck Chat</span>
+    <span class="sts" id="sts">初始化...</span>
+    <span class="sts" id="sessionInfo" style="color:#888;font-size:10px;cursor:pointer;padding:2px 6px;border:1px solid #333;border-radius:4px" title="点击切换会话">会话 1/1 · 0 条消息</span>
+    <span class="sts" id="modelName" style="color:#888;font-size:10px;cursor:pointer" title="点击切换模型"></span>
+  </div>
+  <span style="font-size:10px;color:#666;cursor:pointer;-webkit-app-region:no-drag;padding:4px 8px" id="clearChat" title="\u6e05\u7a7a\u804a\u5929\u8bb0\u5f55">\u{1f5d1}</span>
+  <span class="close" id="cls">&times;</span>
+</div>
+<div class="msgs" id="msgs"></div>
+<div class="typing" id="typing">Hermes typing...</div>
+<div class="input-area">
+  <div class="attach-preview" id="preview"><img id="preview-img" src="" style="display:none"><span class="name" id="fname"></span><span class="remove" id="fremove">&times;</span></div>
+  <div class="input-row">
+    <div class="tools">
+      <button id="attach" title="Upload">📎</button>
+      <input type="file" id="fileinput" accept="image/*" style="display:none">
+      <button id="screenshot" title="Screenshot">📷</button>
+      <button id="mic" title="Voice">🎤</button>
+      <button id="speaker" title="TTS">🔊</button>
+    </div>
+    <textarea id="input" rows="1" placeholder="输入消息..."></textarea>
+    <button class="send-btn" id="stopBtn" style="display:none;background:#f44336;color:#fff" title="停止">\u25a0</button>
+    <button class="send-btn" id="send">Send</button>
+  </div>
+</div>
+<div class="img-overlay" id="imgOverlay"><img id="imgOverlayImg"></div>
+<script>
+(function(){
+var apiKey="",apiPort=8642,sid=null,ready=false,pending=null,img=null,abortCtrl=null,_startTime=0;
+var msgsEl=document.getElementById("msgs"),inputEl=document.getElementById("input"),stsEl=document.getElementById("sts"),typingEl=document.getElementById("typing");
+var _bb=null,_bt="";
+
+// ═══════════════════════════════════════════════
+// 会话记忆管理系统
+// ═══════════════════════════════════════════════
+var SS_KEY="duck_sessions";
+var MEM_KEY="duck_memory";
+var MAX_SESSIONS=10;
+var _sessions=[];     // [{id,started,messages:[{role,content,ts}]}]
+var _currentId=null;
+var _history=[];      // 当前会话的 API messages
+
+function uid(){return "s_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);}
+
+function loadSessions(){
+  try{_sessions=JSON.parse(localStorage.getItem(SS_KEY))||[];}catch(e){_sessions=[];}
+}
+function saveSessions(){
+  try{localStorage.setItem(SS_KEY,JSON.stringify(_sessions));}catch(e){}
+}
+function loadMemory(){
+  try{return JSON.parse(localStorage.getItem(MEM_KEY))||[];}catch(e){return [];}
+}
+function saveMemory(mem){
+  try{localStorage.setItem(MEM_KEY,JSON.stringify(mem));}catch(e){}
+}
+
+function currentSession(){
+  return _sessions.find(function(s){return s.id===_currentId;});
+}
+
+// 新建会话
+function newSession(){
+  var id=uid();
+  _sessions.push({id:id,started:Date.now(),messages:[]});
+  _currentId=id;
+  _history=[];
+  msgsEl.innerHTML="";
+  saveSessions();
+  addMsg("system","\u65b0\u4f1a\u8bdd\u5df2\u521b\u5efa");
+  updateSessionUI();
+  // 超过上限时压缩旧会话
+  if(_sessions.length>MAX_SESSIONS)rotateSessions();
+}
+
+// 切换会话
+function switchSession(id){
+  var s=_sessions.find(function(x){return x.id===id;});
+  if(!s)return;
+  _currentId=id;
+  msgsEl.innerHTML="";
+  // 从会话消息重建 _history 和 DOM
+  _history=[];
+  s.messages.forEach(function(m){
+    if(m.role==="user"){
+      addMsg("user",typeof m.content==="string"?m.content:"[\u56fe\u7247]");
+      _history.push({role:"user",content:m.content});
+    }else if(m.role==="assistant"){
+      addMsg("bot",m.content);
+      _history.push({role:"assistant",content:m.content});
+    }
+  });
+  if(s.messages.length===0)addMsg("system","\u7a7a\u4f1a\u8bdd");
+  updateSessionUI();
+}
+
+// 压缩旧会话 → 记忆文件
+function rotateSessions(){
+  if(_sessions.length<=MAX_SESSIONS)return;
+  var toCompress=_sessions.slice(0,_sessions.length-MAX_SESSIONS);
+  var keep=_sessions.slice(_sessions.length-MAX_SESSIONS);
+  // 生成压缩摘要（用已有消息拼接，不调API，节省token）
+  var summary=compressSessions(toCompress);
+  var mem=loadMemory();
+  mem.push({id:uid(),created:Date.now(),sessionIds:toCompress.map(function(s){return s.id;}),content:summary});
+  // 限制记忆文件数量（最多保留20个）
+  while(mem.length>20)mem.shift();
+  saveMemory(mem);
+  _sessions=keep;
+  saveSessions();
+}
+
+function compressSessions(ss){
+  var lines=[];
+  ss.forEach(function(s){
+    var msgs=s.messages.filter(function(m){return m.role!=="system";});
+    if(msgs.length===0)return;
+    var date=new Date(s.started).toLocaleDateString("zh-CN");
+    var preview=msgs.slice(0,4).map(function(m){
+      var txt=typeof m.content==="string"?m.content.substring(0,80):"[\u56fe\u7247]";
+      return (m.role==="user"?"\u7528\u6237":"AI")+": "+txt;
+    }).join(" | ");
+    lines.push("["+date+"] "+preview+(msgs.length>4?" ...(\u5171"+msgs.length+"\u6761)":""));
+  });
+  return lines.join("\n");
+}
+
+// 构建带记忆的 messages（核心：压缩上下文）
+async function buildMessagesWithContext(userText){
+  var msgs=[];
+  msgs.push({role:"system",content:"\u6240\u6709\u56de\u7b54\u5fc5\u987b\u7528\u4e2d\u6587\u3002\u63a5\u5230\u4efb\u52a1\u540e\u76f4\u63a5\u52a8\u624b\u6267\u884c\uff0c\u4e0d\u8981\u8ba9\u7528\u6237\u53bb\u8dd1\u547d\u4ee4\u6216\u624b\u52a8\u64cd\u4f5c\u3002\u4f4e\u98ce\u9669\u76f4\u63a5\u6267\u884c\uff0c\u4e2d\u98ce\u9669\u544a\u77e5\u540e\u6267\u884c\uff0c\u9ad8\u98ce\u9669\u5fc5\u987b\u8bf7\u793a\u7528\u6237\u3002\u4e0d\u8981\u53cd\u590d\u6253\u8865\u4e01\uff0c\u4e00\u6b21\u6027\u5199\u597d\u518d\u6d4b\u901a\u518d\u6c47\u62a5\u3002"});
+  // RAG: \u4ece\u77e5\u8bc6\u5e93\u68c0\u7d22\u76f8\u5173\u5185\u5bb9
+  if(userText&&window.electronAPI&&window.electronAPI.kbSearch){
+    try{
+      var kbResults=await window.electronAPI.kbSearch(userText,3);
+      if(kbResults&&kbResults.results&&kbResults.results.length>0){
+        var kbContext="\n\n[\u4ee5\u4e0b\u662f\u4ece\u77e5\u8bc6\u5e93\u68c0\u7d22\u5230\u7684\u76f8\u5173\u5185\u5bb9\uff0c\u53ef\u4f5c\u4e3a\u53c2\u8003:]\n";
+        kbResults.results.forEach(function(r,i){
+          kbContext+="\n[\u53c2\u8003"+(i+1)+"] ("+r.source+") "+r.text+"\n";
+        });
+        msgs.push({role:"system",content:kbContext});
+      }
+    }catch(e){}
+  }
+  var mem=loadMemory();
+  if(mem.length>0){
+    var memText=mem.map(function(m){return m.content;}).join("\n---\n");
+    msgs.push({role:"system",content:"\u4ee5\u4e0b\u662f\u7528\u6237\u7684\u5386\u53f2\u4f1a\u8bdd\u8bb0\u5fc6\u6458\u8981\uff0c\u5f53\u7528\u6237\u8be2\u95ee\u8fc7\u53bb\u7684\u4e8b\u60c5\u65f6\u53c2\u8003\uff1a\n"+memText});
+  }
+  // 当前会话消息（最近20条，避免过长）
+  var recent=_history.slice(-20);
+  msgs=msgs.concat(recent);
+  return msgs;
+}
+
+// 更新顶部会话信息
+function updateSessionUI(){
+  var el=document.getElementById("sessionInfo");
+  if(!el)return;
+  var idx=_sessions.findIndex(function(s){return s.id===_currentId;});
+  var s=currentSession();
+  var count=s?s.messages.filter(function(m){return m.role!=="system";}).length:0;
+  el.textContent="\u4f1a\u8bdd "+(idx+1)+"/"+_sessions.length+" \u00b7 "+count+" \u6761\u6d88\u606f";
+  el.title="\u70b9\u51fb\u5207\u6362\u4f1a\u8bdd";
+}
+
+// 切换会话面板
+function showSessionList(){
+  var panel=document.getElementById("sessionPanel");
+  if(panel.style.display!=="none"){panel.style.display="none";return;}
+  var html="";
+  _sessions.slice().reverse().forEach(function(s,i){
+    var realIdx=_sessions.length-1-i;
+    var msgs=s.messages.filter(function(m){return m.role!=="system";});
+    var first=msgs.length>0?(typeof msgs[0].content==="string"?msgs[0].content.substring(0,40):"[\u56fe\u7247]"):"\u7a7a\u4f1a\u8bdd";
+    var date=new Date(s.started).toLocaleString("zh-CN",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+    var active=s.id===_currentId;
+    html+='<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #222;background:'+(active?"rgba(245,166,35,0.1)":"transparent")+'" data-sid="'+s.id+'">';
+    html+='<div style="color:'+(active?"#f5a623":"#ccc")+';font-size:11px">'+first+'</div>';
+    html+='<div style="color:#555;font-size:9px">'+date+" \u00b7 "+msgs.length+" \u6761</div></div>";
+  });
+  html+='<div style="padding:8px 12px;cursor:pointer;color:#f5a623;font-size:11px;text-align:center" id="newSessionBtn">+ \u65b0\u4f1a\u8bdd</div>';
+  panel.innerHTML=html;
+  panel.style.display="block";
+  // 绑定点击
+  panel.querySelectorAll("[data-sid]").forEach(function(el){
+    el.onclick=function(){switchSession(this.getAttribute("data-sid"));panel.style.display="none";};
+  });
+  var newBtn=document.getElementById("newSessionBtn");
+  if(newBtn)newBtn.onclick=function(){newSession();panel.style.display="none";};
+}
+
+// ═══════════════════════════════════════════════
+// 原有功能（保持不变）
+// ═══════════════════════════════════════════════
+var _thinking=false,_thinkStart=0;
+function updateThinking(){
+  if(!_thinking)return;
+  var sec=Math.floor((Date.now()-_thinkStart)/1000);
+  typingEl.textContent="\u601d\u8003\u4e2d... "+sec+"s";
+  typingEl.style.display="block";
+  setTimeout(updateThinking,1000);
+}
+function startBot(){_bt="";_bb=null;_startTime=Date.now();}
+var _rafPending=false;
+function addBot(text){
+  _bt+=text;
+  if(!_bb){var d=document.createElement("div");d.className="msg k";_bb=document.createElement("div");_bb.className="bubble";d.appendChild(_bb);var t=document.createElement("div");t.className="time";t.textContent=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});d.appendChild(t);msgsEl.appendChild(d);}
+  if(!_rafPending){_rafPending=true;requestAnimationFrame(function(){if(_bb){_bb.textContent=_bt;msgsEl.scrollTop=msgsEl.scrollHeight;}_rafPending=false;if(_thinking){_thinking=false;typingEl.textContent="\u8f93\u51fa\u4e2d...";}});}
+}
+function endBot(text,usage){
+  if(_bb){
+    _bb.textContent=text||_bt;
+    var s=currentSession();if(s)s.messages.push({role:"assistant",content:text||_bt,ts:Date.now()});saveSessions();
+    var elapsed=((Date.now()-_startTime)/1000).toFixed(1);
+    var charCount=(text||_bt||"").length;
+    var meta=document.createElement("div");meta.className="meta";
+    var html="<span>\u23f1 "+elapsed+"s</span><span>"+charCount+" \u5b57</span>";
+    if(usage){
+      if(usage.prompt_tokens)html+="<span>\u2191"+usage.prompt_tokens+"</span>";
+      if(usage.completion_tokens)html+="<span>\u2193"+usage.completion_tokens+"</span>";
+      if(usage.total_tokens)html+="<span>\u03a3"+usage.total_tokens+"</span>";
+    }
+    meta.innerHTML=html;
+    _bb.parentElement.appendChild(meta);
+  }else if(text){addMsg("bot",text);}
+  _bb=null;_bt="";
+  typingEl.style.display="none";
+  _thinking=false;
+  document.getElementById("send").style.display="inline-block";
+  document.getElementById("stopBtn").style.display="none";
+}
+
+function addMsg(type,text){
+  var d=document.createElement("div");d.className="msg "+(type==="user"?"u":type==="system"?"s":"k");
+  var b=document.createElement("div");b.className="bubble";b.textContent=text||"";d.appendChild(b);
+  if(type!=="system"){var t=document.createElement("div");t.className="time";t.textContent=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});d.appendChild(t);}
+  msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;
+}
+
+async function init(){
+  loadSessions();
+  // 恢复最近有消息的会话，没有则新建
+  if(_sessions.length===0){newSession();}
+  else{
+    // 找最近有消息的会话
+    var lastWithMsgs=null;
+    for(var i=_sessions.length-1;i>=0;i--){
+      if(_sessions[i].messages&&_sessions[i].messages.length>0){lastWithMsgs=_sessions[i];break;}
+    }
+    if(lastWithMsgs){_currentId=lastWithMsgs.id;switchSession(_currentId);}
+    else{_currentId=_sessions[_sessions.length-1].id;switchSession(_currentId);}
+  }
+  updateSessionUI();
+  // 立即更新状态，避免卡在"初始化..."
+  stsEl.textContent="\u8fde\u63a5\u4e2d...";stsEl.style.color="#f5a623";
+  try{
+    // 并行获取 API key 和 API port（带超时）
+    var promises=[];
+    if(window.electronAPI&&window.electronAPI.getApiKey)promises.push(window.electronAPI.getApiKey().catch(function(){return "";}));
+    if(window.electronAPI&&window.electronAPI.getApiPort)promises.push(window.electronAPI.getApiPort().catch(function(){return 8642;}));
+    // 同时启动 TTS 检查（不阻塞）
+    if(window.electronAPI&&window.electronAPI.ttsCheck){
+      window.electronAPI.ttsCheck().then(function(r){
+        if(r&&r.ok){console.log("[TTS] edge-tts ready");}
+        else{console.log("[TTS] edge-tts not available");}
+      }).catch(function(){});
+    }
+    // 添加超时保护，防止 Promise.all 永久等待
+    var timeoutPromise=new Promise(function(resolve){setTimeout(function(){resolve(["",8642]);},5000);});
+    var results=await Promise.race([Promise.all(promises),timeoutPromise]);
+    apiKey=results[0]||"";
+    apiPort=results[1]||8642;
+    
+    // 如果没有 API key，尝试多种方式获取（带重试）
+    if(!apiKey){
+      stsEl.textContent="\u83b7\u53d6\u8ba4\u8bc1...";stsEl.style.color="#f5a623";
+      for(var retry=0;retry<3;retry++){
+        try{
+          var controller=new AbortController();
+          var timeoutId=setTimeout(function(){controller.abort();},3000);
+          var r=await fetch("http://127.0.0.1:9119/",{signal:controller.signal});
+          clearTimeout(timeoutId);
+          var h=await r.text();
+          var m=h.match(/__HERMES_SESSION_TOKEN__\s*=\s*"([^"]+)"/);
+          if(m){apiKey=m[1];break;}
+        }catch(e){
+          console.log("[init] Retry "+(retry+1)+" failed:",e.message);
+          if(retry<2)await new Promise(function(r){setTimeout(r,2000);});
+        }
+      }
+    }
+    
+    // 如果还是没有，尝试使用 gateway key
+    if(!apiKey&&window.electronAPI&&window.electronAPI.getSessionToken){
+      try{
+        var token=await window.electronAPI.getSessionToken();
+        if(token)apiKey=token;
+      }catch(e){}
+    }
+    
+    // 最终检查：如果还是没有 key，尝试直接从 .env 读取 gateway key
+    if(!apiKey&&window.electronAPI&&window.electronAPI.getGatewayKey){
+      try{
+        var gk=await window.electronAPI.getGatewayKey();
+        if(gk)apiKey=gk;
+      }catch(e){}
+    }
+    
+    if(window.electronAPI&&window.electronAPI.onModelChanged){window.electronAPI.onModelChanged(function(){sid=null;addMsg("system","\u6a21\u578b\u5df2\u5207\u6362\uff0c\u4f1a\u8bdd\u5df2\u91cd\u7f6e");});}
+    if(apiKey){
+      stsEl.textContent="online";stsEl.style.color="#4CAF50";ready=true;
+      // 获取当前模型名（不阻塞，带超时）
+      var modelController=new AbortController();
+      var modelTimeoutId=setTimeout(function(){modelController.abort();},5000);
+      fetch("http://127.0.0.1:9119/api/model/info",{headers:{"Authorization":"Bearer "+apiKey},signal:modelController.signal}).then(function(mResp){
+        clearTimeout(modelTimeoutId);
+        if(mResp.ok)return mResp.json();throw new Error(mResp.status);
+      }).then(function(mInfo){
+        var mNameEl=document.getElementById("modelName");
+        if(mNameEl&&mInfo.model){mNameEl.textContent=mInfo.model;mNameEl.title=mInfo.provider+"/"+mInfo.model;}
+      }).catch(function(){clearTimeout(modelTimeoutId);});
+    }else{
+      stsEl.textContent="no auth";stsEl.style.color="#f44336";addMsg("system","\u65e0\u6cd5\u83b7\u53d6\u8ba4\u8bc1\u4fe1\u606f\uff0c\u8bf7\u68c0\u67e5 Hermes \u662f\u5426\u8fd0\u884c");
+      addMsg("system","\u63d0\u793a\uff1a\u53ef\u4ee5\u5c1d\u8bd5\u91cd\u542f Duck Desktop \u6216\u624b\u52a8\u542f\u52a8 Hermes");
+    }
+  }catch(e){
+    console.error("[init] Error:",e);
+    stsEl.textContent="error";stsEl.style.color="#f44336";addMsg("system","\u521d\u59cb\u5316\u5931\u8d25\uff1a"+e.message);
+  }
+}
+
+async function doSubmit(text){
+  if(!apiKey){addMsg("system","\u672a\u8fde\u63a5");return;}
+  if(abortCtrl){try{abortCtrl.abort();}catch(e){}}
+  abortCtrl=new AbortController();
+  
+  // Build user message content (multimodal if image attached)
+  var userContent;
+  if(img){
+    userContent=[
+      {type:"text",text:text},
+      {type:"image_url",image_url:{url:img.data}}
+    ];
+    img=null;
+    document.getElementById("preview").style.display="none";
+  } else {
+    userContent=text;
+  }
+  _history.push({role:"user",content:userContent});
+  // 保存到会话
+  var s=currentSession();if(s)s.messages.push({role:"user",content:userContent,ts:Date.now()});saveSessions();
+  typingEl.style.display="block";
+  _thinking=true;
+  document.getElementById("send").style.display="none";
+  document.getElementById("stopBtn").style.display="inline-block";
+  _thinkStart=Date.now();
+  updateThinking();
+  startBot();
+  
+  var baseUrl="http://127.0.0.1:"+apiPort;
+  var headers={"Content-Type":"application/json","Authorization":"Bearer "+apiKey};
+  if(sid)headers["X-Hermes-Session-Id"]=sid;
+  
+  // ★ 核心：用 buildMessages() 替代 _history，注入记忆上下文
+  var messages=await buildMessagesWithContext(text);
+  var body={model:"hermes",messages:messages,stream:true,stream_options:{include_usage:true}};
+  
+  try{
+    var resp;
+    try{
+      var timeoutId=setTimeout(function(){if(abortCtrl)abortCtrl.abort();},60000);
+      resp=await fetch(baseUrl+"/v1/chat/completions",{method:"POST",headers:headers,body:JSON.stringify(body),signal:abortCtrl.signal});
+      clearTimeout(timeoutId);
+    }catch(fetchErr){
+      endBot("");
+      if(fetchErr.name==="AbortError"){
+        addMsg("system",`⚠️ 模型无响应（60秒超时）。
+可能原因：
+· 模型服务未运行（如Ollama、vLLM）
+· 网络连接异常
+请检查后重试，或在主界面切换模型。`);
+      }else{
+        addMsg("system",`❌ 连接失败：${fetchErr.message}
+请检查Hermes Gateway是否运行（端口8642）`);
+      }
+      typingEl.style.display="none";abortCtrl=null;return;
+    }
+    if(!resp.ok){var errText=await resp.text();endBot("");addMsg("system","❌ API错误 "+resp.status+": "+errText);typingEl.style.display="none";return;}
+    
+    // Capture session ID from response headers
+    var newSid=resp.headers.get("X-Hermes-Session-Id");
+    if(newSid)sid=newSid;
+    
+    var reader=resp.body.getReader();
+    var decoder=new TextDecoder();
+    var buffer="";
+    var fullText="",_lastUsage=null;
+    
+    while(true){
+      var {done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      var lines=buffer.split("\n");
+      buffer=lines.pop()||"";
+      
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i].trim();
+        if(!line||!line.startsWith("data:"))continue;
+        var data=line.slice(5).trim();
+        if(data==="[DONE]"){continue;}
+        try{
+          var chunk=JSON.parse(data);
+          var delta=chunk.choices&&chunk.choices[0]&&chunk.choices[0].delta;
+          if(delta&&delta.content){fullText+=delta.content;addBot(delta.content);}
+          if(chunk.usage)_lastUsage=chunk.usage;
+        }catch(e){}
+      }
+    }
+    
+    if(fullText)_history.push({role:"assistant",content:fullText});
+    endBot(fullText,_lastUsage);
+  }catch(e){
+    if(e.name==="AbortError"){endBot("");return;}
+    endBot("");addMsg("system","Error: "+e.message);
+  }
+  typingEl.style.display="none";
+  abortCtrl=null;
+}
+
+function sendMessage(){
+  var text=inputEl.value.trim();if(!text)return;
+  if(img){
+    var d=document.createElement("div");d.className="msg u";
+    var b=document.createElement("div");b.className="bubble";
+    b.appendChild(document.createTextNode(text||""));
+    var imgel=document.createElement("img");imgel.src=img.data;
+    imgel.onclick=function(){document.getElementById("imgOverlayImg").src=this.src;document.getElementById("imgOverlay").classList.add("show");};
+    b.appendChild(imgel);
+    d.appendChild(b);
+    var tm=document.createElement("div");tm.className="time";
+    tm.textContent=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
+    d.appendChild(tm);
+    msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;
+  } else {
+    addMsg("user",text);
+  }
+  inputEl.value="";inputEl.style.height="40px";
+  doSubmit(text);
+}
+
+document.getElementById("send").onclick=sendMessage;
+document.getElementById("cls").onclick=function(){
+  try{
+    if(window.electronAPI&&window.electronAPI.closeChat)window.electronAPI.closeChat();
+    else window.close();
+  }catch(e){
+    console.error("[close] Error:",e);
+    try{window.close();}catch(e2){}
+  }
+};
+document.getElementById("imgOverlay").onclick=function(){this.classList.remove("show");};
+inputEl.onkeydown=function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}};
+inputEl.oninput=function(){this.style.height="40px";this.style.height=Math.min(this.scrollHeight,120)+"px";};
+
+// Voice (Vosk-based via IPC)
+var micBtn=document.getElementById("mic"),isListening=false;
+function startMic(){
+  if(!window.electronAPI||!window.electronAPI.startChatMic)return;
+  isListening=true;
+  micBtn.style.background="#f44336";micBtn.style.color="white";micBtn.style.borderRadius="50%";
+  inputEl.placeholder="正在听...";
+  window.electronAPI.startChatMic().then(function(r){
+    isListening=false;
+    micBtn.style.background="";micBtn.style.color="";micBtn.style.borderRadius="";
+    inputEl.placeholder="输入消息...";
+    if(r&&r.text&&r.text.trim()){
+      inputEl.value=r.text.trim();
+      setTimeout(function(){sendMessage();},200);
+    }
+  }).catch(function(){
+    isListening=false;
+    micBtn.style.background="";micBtn.style.color="";micBtn.style.borderRadius="";
+    inputEl.placeholder="输入消息...";
+  });
+}
+function stopMic(){
+  if(!isListening)return;
+  isListening=false;
+  micBtn.style.background="";micBtn.style.color="";micBtn.style.borderRadius="";
+  inputEl.placeholder="输入消息...";
+  if(window.electronAPI&&window.electronAPI.stopChatMic)window.electronAPI.stopChatMic();
+}
+micBtn.onclick=function(){isListening?stopMic():startMic();};
+
+// Image
+document.getElementById("attach").onclick=function(){document.getElementById("fileinput").click();};
+document.getElementById("fileinput").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){img={data:ev.target.result,name:f.name};document.getElementById("fname").textContent=f.name;document.getElementById("preview").style.display="block";};r.readAsDataURL(f);this.value="";};
+document.getElementById("screenshot").onclick=async function(){
+  if(!window.electronAPI||!window.electronAPI.captureScreenshot)return;
+  try{
+    var r=await window.electronAPI.captureScreenshot();
+    if(r&&r.data){
+      img={data:r.data,name:"screenshot.png"};
+      document.getElementById("fname").textContent="screenshot.png";
+      document.getElementById("preview").style.display="block";
+    }
+  }catch(e){}
+};
+document.getElementById("fremove").onclick=function(){img=null;document.getElementById("preview").style.display="none";};
+
+// TTS Speaker
+var speakerBtn=document.getElementById("speaker"),_ttsAudio=null;
+speakerBtn.onclick=async function(){
+  if(_ttsAudio){_ttsAudio.pause();_ttsAudio=null;speakerBtn.classList.remove("tts-playing");return;}
+  var msgs=msgsEl.querySelectorAll(".msg.k .bubble");
+  if(!msgs.length)return;
+  var lastText=msgs[msgs.length-1].textContent.trim();
+  if(!lastText)return;
+  speakerBtn.classList.add("tts-playing");
+  try{
+    var r=await window.electronAPI.ttsSpeak(lastText);
+    if(r&&r.path){
+      _ttsAudio=new Audio("file:///"+r.path.replace(/\\/g,"/"));
+      _ttsAudio.onended=function(){speakerBtn.classList.remove("tts-playing");_ttsAudio=null;};
+      _ttsAudio.onerror=function(){speakerBtn.classList.remove("tts-playing");_ttsAudio=null;};
+      _ttsAudio.play();
+    }else{speakerBtn.classList.remove("tts-playing");}
+  }catch(e){speakerBtn.classList.remove("tts-playing");}
+};
+
+// 会话面板切换
+document.getElementById("sessionInfo").onclick=showSessionList;
+// 点击外部关闭面板
+document.addEventListener("click",function(e){
+  var panel=document.getElementById("sessionPanel");
+  var info=document.getElementById("sessionInfo");
+  if(panel&&panel.style.display!=="none"&&!panel.contains(e.target)&&e.target!==info)panel.style.display="none";
+});
+
+
+// 清除所有数据
+// 监听新建会话信号（从主窗口对话按钮触发）
+if(window.electronAPI&&window.electronAPI.onNewSession){
+  window.electronAPI.onNewSession(function(){
+    // 从主窗口💬按钮触发，总是新建会话
+    newSession();
+  });
+}
+
+document.getElementById("stopBtn").onclick=function(){
+  if(abortCtrl){try{abortCtrl.abort();}catch(e){}}
+  endBot(_bt||"\u5df2\u505c\u6b62");
+  addMsg("system","\u23f9 \u5df2\u505c\u6b62\u8f93\u51fa");
+};
+document.getElementById("clearChat").onclick=function(){
+  _sessions=[];_history=[];
+  try{localStorage.removeItem(SS_KEY);localStorage.removeItem(MEM_KEY);}catch(e){}
+  msgsEl.innerHTML="";
+  newSession();
+  addMsg("system","\u6240\u6709\u6570\u636e\u5df2\u6e05\u9664");
+};
+init();
+})();
+
+</script></script>
+<div id="sessionPanel" style="display:none;position:fixed;top:35px;left:10px;width:280px;max-height:60vh;overflow-y:auto;background:rgba(26,20,8,0.98);border:1px solid #333;border-radius:8px;z-index:99999;font-family:Inter,system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.5)"></div>
+</body>
+</html>

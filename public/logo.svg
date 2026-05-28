@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <!-- 鸭子身体 -->
+  <ellipse cx="128" cy="160" rx="90" ry="70" fill="#FFD700"/>
+  <!-- 鸭子头部 -->
+  <circle cx="180" cy="80" r="50" fill="#FFD700"/>
+  <!-- 鸭子眼睛（左） -->
+  <circle cx="195" cy="68" r="8" fill="#1a1408"/>
+  <circle cx="197" cy="66" r="3" fill="white"/>
+  <!-- 鸭子嘴巴 -->
+  <ellipse cx="220" cy="85" rx="30" ry="12" fill="#FF8C00"/>
+  <ellipse cx="220" cy="85" rx="28" ry="10" fill="#FFA500"/>
+  <!-- 嘴巴线条 -->
+  <path d="M200 85 Q220 90 245 85" stroke="#FF8C00" stroke-width="1.5" fill="none"/>
+  <!-- 鸭子翅膀 -->
+  <ellipse cx="100" cy="140" rx="35" ry="25" fill="#FFC800" transform="rotate(-15 100 140)"/>
+  <!-- 鸭子水波纹 -->
+  <path d="M40 210 Q60 200 80 210 Q100 220 120 210 Q140 200 160 210 Q180 220 200 210 Q220 200 240 210" stroke="#4FC3F7" stroke-width="3" fill="none" opacity="0.6"/>
+  <path d="M30 220 Q50 210 70 220 Q90 230 110 220 Q130 210 150 220 Q170 230 190 220 Q210 210 230 220" stroke="#4FC3F7" stroke-width="2" fill="none" opacity="0.4"/>
+</svg>

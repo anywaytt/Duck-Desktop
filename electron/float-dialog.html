@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Duck</title>
+<link rel="stylesheet" href="float-dialog.css">
+</head>
+<body>
+<div class="container" id="container">
+  <div class="hdr">
+    <span class="icon">🦆</span>
+    <span class="title">Duck</span>
+    <span class="status" id="status">待命中</span>
+    <span class="level-bar"><span class="level-fill" id="levelFill"></span></span>
+    <span class="mode-btn" id="modeBtn" title="切换连续/普通模式">🎤</span>
+    <span class="close" id="closeBtn" title="关闭">✕</span>
+  </div>
+
+  <div class="msgs" id="msgs">
+    <div class="duck-idle" id="idleHint">
+      <div class="duck-emoji">🦆</div>
+      <div class="hint">说"鸭子"叫醒我~</div>
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <input type="text" id="textInput" placeholder="输入文字..." />
+    <button id="sendBtn" title="发送">▶</button>
+  </div>
+</div>
+<script src="float-dialog.js"></script>
+</body>
+</html>

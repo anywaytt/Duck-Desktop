@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Duck Desktop 配置</title>
+<link rel="stylesheet" href="setup.css">
+</head>
+<body>
+<div class="hdr">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:20px">🦆</span>
+    <span class="title">Duck Desktop 配置向导</span>
+  </div>
+  <span class="close" id="cls">&times;</span>
+</div>
+
+<div class="content">
+  <!-- Step 1: Environment Check -->
+  <div class="step" id="step1">
+    <div class="step-title"><span class="icon">🔍</span> 环境检测</div>
+    <div id="check-list"></div>
+    <div class="progress-bar"><div class="progress-fill" id="check-progress" style="width:0%"></div></div>
+    <button class="btn" id="btn-recheck" style="display:none">重新检测</button>
+  </div>
+
+  <!-- Step 2: Install Missing -->
+  <div class="step hidden" id="step2">
+    <div class="step-title"><span class="icon">📦</span> 安装缺失依赖</div>
+    <div id="install-list"></div>
+    <div class="progress-bar"><div class="progress-fill" id="install-progress" style="width:0%"></div></div>
+    <button class="btn" id="btn-install">一键安装</button>
+    <div class="status-msg" id="install-status"></div>
+  </div>
+
+  <!-- Step 3: API Configuration -->
+  <div class="step hidden" id="step3">
+    <div class="step-title"><span class="icon">🔑</span> API 配置</div>
+    <div class="input-group">
+      <label>Hermes Gateway 端口（默认 8642）</label>
+      <input type="text" id="api-port" value="8642" placeholder="8642">
+    </div>
+    <div class="input-group">
+      <label>API Server Key（在 .env 文件中配置）</label>
+      <input type="password" id="api-key" placeholder="hermes-openwebui-xxx...">
+    </div>
+    <button class="btn" id="btn-save">保存并启动</button>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="status-msg" id="footer-status">准备就绪</span>
+</div>
+<script src="setup.js"></script>
+</body>
+</html>
